@@ -1,46 +1,92 @@
-# Getting Started with Create React App
+# 🍅 Pomodoro Timer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Um aplicativo moderno de Pomodoro construído com React 19, TypeScript 5, Vite e Tailwind CSS.
 
-## Available Scripts
+![Pomodoro Timer](https://img.shields.io/badge/version-2.0.0-blue)
+![React](https://img.shields.io/badge/react-19-61dafb)
+![TypeScript](https://img.shields.io/badge/typescript-5-3178c6)
+![Vite](https://img.shields.io/badge/vite-7-646cff)
 
-In the project directory, you can run:
+## ✨ Características
 
-### `npm start`
+- ⚡ **Vite** - Build tool ultrarrápido
+- 🎨 **Tailwind CSS v4** - Design system moderno e responsivo
+- 🌙 **Modo Escuro** - Troca automática entre temas claro e escuro
+- 💾 **Persistência** - Estatísticas salvas no LocalStorage
+- 🔔 **Notificações** - Alertas do navegador quando o timer termina
+- 🎭 **Animações** - Transições suaves com Framer Motion
+- 📱 **Responsivo** - Funciona perfeitamente em mobile e desktop
+- 🎵 **Sons** - Feedback sonoro para início e fim dos timers
+- 📊 **Estatísticas** - Acompanhe ciclos, pomodoros e tempo trabalhado
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## 🚀 Técnica Pomodoro
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+A técnica Pomodoro é um método de gerenciamento de tempo que usa um timer para dividir o trabalho em intervalos:
 
-### `npm test`
+- **25 minutos** de trabalho focado 💼
+- **5 minutos** de descanso curto ☕
+- Após 4 pomodoros: **15 minutos** de descanso longo 🌴
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🛠️ Stack Tecnológico
 
-### `npm run build`
+- **React 19** - Biblioteca UI
+- **TypeScript 5** - Tipagem estática
+- **Vite 7** - Build tool e dev server
+- **Tailwind CSS 4** - Framework CSS utilitário
+- **Zustand** - Gerenciamento de estado
+- **Framer Motion** - Animações
+- **LocalStorage API** - Persistência de dados
+- **Notification API** - Notificações do navegador
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 📦 Instalação
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+# Clone o repositório
+git clone https://github.com/seu-usuario/pomodoro.git
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# Entre na pasta
+cd pomodoro
 
-### `npm run eject`
+# Instale as dependências
+npm install
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+# Rode em modo desenvolvimento
+npm run dev
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 🎯 Scripts Disponíveis
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```bash
+npm run dev      # Inicia o servidor de desenvolvimento
+npm run build    # Cria build de produção
+npm run preview  # Preview do build de produção
+npm run lint     # Roda o linter
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## 🎨 Personalização
 
-## Learn More
+As configurações padrão são:
+- **Tempo de trabalho**: 25 minutos
+- **Descanso curto**: 5 minutos
+- **Descanso longo**: 15 minutos
+- **Ciclos até descanso longo**: 4
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Para alterar, edite `src/store/pomodoro.ts`.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 📱 Suporte de Navegadores
+
+- Chrome/Edge (últimas 2 versões)
+- Firefox (últimas 2 versões)
+- Safari (últimas 2 versões)
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT.
+
+## 🙏 Créditos
+
+Sons de sino: [Freesound](https://freesound.org/)
+
+---
+
+Feito com ❤️ e ☕

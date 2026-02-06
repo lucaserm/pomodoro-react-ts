@@ -1,133 +1,163 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { usePomodoroStore } from '../store/pomodoro';
 import { useInterval } from '../hooks/use-interval';
-import { Button } from './button';
 import { Timer } from './timer';
+import { Button } from './button';
 import { secondsToTime } from '../utils/seconds-to-time';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const bellStart = require('../sounds/bell-start.mp3');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const bellFinish = require('../sounds/bell-finish.mp3');
+import { requestNotificationPermission, showNotification } from '../utils/notifications';
+import bellStart from '../sounds/bell-start.mp3';
+import bellFinish from '../sounds/bell-finish.mp3';
 
 const audioStartWorking = new Audio(bellStart);
 const audioStopWorking = new Audio(bellFinish);
 
-interface Props {
-  pomodoroTime: number;
-  shortRestTime: number;
-  longRestTime: number;
-  cycles: number;
-}
+export function PomodoroTimer() {
+  const {
+    mainTime,
+    timeCounting,
+    mode,
+    cyclesQtdManager,
+    completedCycles,
+    fullWorkingTime,
+    numberOfPomodoros,
+    pomodoroTime,
+    shortRestTime,
+    longRestTime,
+    decrementTime,
+    toggleTimer,
+    setMainTime,
+    setMode,
+    incrementPomodoros,
+    completeCycle,
+    resetCycleManager,
+    popCycleManager,
+  } = usePomodoroStore();
 
-export function PomodoroTimer(props: Props): JSX.Element {
-  const [mainTime, setMainTime] = useState(props.pomodoroTime);
-  const [timeCounting, setTimeCounting] = useState(false);
-  const [working, setWorking] = useState(false);
-  const [resting, setResting] = useState(false);
-  const [cyclesQtdManager, setCyclesQtdManager] = useState(
-    new Array(props.cycles - 1).fill(true),
-  );
-
-  const [completedCycles, setCompletedCycles] = useState(0);
-  const [fullWorkingTime, setFullWorkingTime] = useState(0);
-  const [numberOfPomodoros, setNumberOfPomodoros] = useState(0);
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
 
   useInterval(
     () => {
-      setMainTime(mainTime - 1);
-      if (working) setFullWorkingTime(fullWorkingTime + 1);
+      decrementTime();
     },
-    timeCounting ? 1000 : null,
+    timeCounting ? 1000 : null
   );
 
-  const configureWork = useCallback(() => {
-    setTimeCounting(true);
-    setWorking(true);
-    setResting(false);
-    setMainTime(props.pomodoroTime);
+  const configureWork = () => {
+    setMode('work');
+    setMainTime(pomodoroTime);
+    if (!timeCounting) {
+      toggleTimer();
+    }
     audioStartWorking.play();
-  }, [
-    setTimeCounting,
-    setWorking,
-    setResting,
-    setMainTime,
-    props.pomodoroTime,
-  ]);
+    showNotification('Hora de trabalhar! 💼', 'Foque por 25 minutos');
+  };
 
-  const configureRest = useCallback(
-    (long: boolean) => {
-      setTimeCounting(true);
-      setWorking(false);
-      setResting(true);
-
-      if (long) {
-        setMainTime(props.longRestTime);
-      } else {
-        setMainTime(props.shortRestTime);
-      }
-
-      audioStopWorking.play();
-    },
-    [
-      setTimeCounting,
-      setWorking,
-      setResting,
-      setMainTime,
-      props.longRestTime,
-      props.shortRestTime,
-    ],
-  );
+  const configureRest = (long: boolean) => {
+    setMode(long ? 'longRest' : 'shortRest');
+    setMainTime(long ? longRestTime : shortRestTime);
+    if (!timeCounting) {
+      toggleTimer();
+    }
+    audioStopWorking.play();
+    showNotification(
+      long ? 'Descanso longo! ☕' : 'Hora de descansar! ☕',
+      long ? 'Relaxe por 15 minutos' : 'Descanse por 5 minutos'
+    );
+  };
 
   useEffect(() => {
-    if (working) document.body.classList.add('working');
-    if (resting) document.body.classList.remove('working');
-
     if (mainTime > 0) return;
 
-    if (working && cyclesQtdManager.length > 0) {
+    if (mode === 'work' && cyclesQtdManager.length > 0) {
       configureRest(false);
-      cyclesQtdManager.pop();
-    } else if (working && cyclesQtdManager.length <= 0) {
+      popCycleManager();
+    } else if (mode === 'work' && cyclesQtdManager.length <= 0) {
       configureRest(true);
-      setCyclesQtdManager(new Array(props.cycles - 1).fill(true));
-      setCompletedCycles(completedCycles + 1);
+      resetCycleManager();
+      completeCycle();
     }
 
-    if (working) setNumberOfPomodoros(numberOfPomodoros + 1);
-    if (resting) configureWork();
-  }, [
-    working,
-    resting,
-    mainTime,
-    cyclesQtdManager,
-    numberOfPomodoros,
-    completedCycles,
-    configureRest,
-    setCyclesQtdManager,
-    configureWork,
-    props.cycles,
-  ]);
+    if (mode === 'work') {
+      incrementPomodoros();
+    }
+    if (mode === 'shortRest' || mode === 'longRest') {
+      configureWork();
+    }
+  }, [mainTime]);
+
+  useEffect(() => {
+    document.body.className = mode === 'work' ? 'working' : 'resting';
+  }, [mode]);
+
+  const isWorking = mode === 'work';
+  const isResting = mode === 'shortRest' || mode === 'longRest';
 
   return (
-    <div className="pomodoro">
-      <h2>Você está: {working ? 'Trabalhando' : 'Descansando'}</h2>
-      <Timer mainTime={mainTime} />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="min-h-screen flex items-center justify-center p-4"
+    >
+      <div className="w-full max-w-3xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 md:p-12">
+        <motion.h2
+          key={mode}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-2xl md:text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white"
+        >
+          {isWorking ? '💼 Trabalhando' : isResting ? '☕ Descansando' : '🍅 Pronto para começar'}
+        </motion.h2>
 
-      <div className="controls">
-        <Button text="Work" onClick={() => configureWork()}></Button>
-        <Button text="Rest" onClick={() => configureRest(false)}></Button>
-        <Button
-          className={!working && !resting ? 'hidden' : ''}
-          text={timeCounting ? 'Pause' : 'Play'}
-          onClick={() => setTimeCounting(!timeCounting)}
-        ></Button>
-      </div>
+        <Timer mainTime={mainTime} />
 
-      <div className="details">
-        <p>Ciclos concluídos: {completedCycles}</p>
-        <p>Horas trabalhadas: {secondsToTime(fullWorkingTime)}</p>
-        <p>Pomodoros concluídos: {numberOfPomodoros}</p>
+        <div className="flex gap-4 justify-center flex-wrap my-8">
+          <Button
+            onClick={configureWork}
+            variant={isWorking ? 'primary' : 'secondary'}
+          >
+            Trabalhar
+          </Button>
+          <Button
+            onClick={() => configureRest(false)}
+            variant={isResting ? 'primary' : 'secondary'}
+          >
+            Descansar
+          </Button>
+          <Button
+            onClick={toggleTimer}
+            disabled={mode === 'idle'}
+          >
+            {timeCounting ? '⏸ Pausar' : '▶ Iniciar'}
+          </Button>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8"
+        >
+          <StatCard label="Ciclos concluídos" value={completedCycles} />
+          <StatCard label="Tempo trabalhado" value={secondsToTime(fullWorkingTime)} />
+          <StatCard label="Pomodoros" value={numberOfPomodoros} />
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: string | number }) {
+  return (
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-center cursor-default"
+    >
+      <p className="text-sm text-gray-600 dark:text-gray-300">{label}</p>
+      <p className="text-3xl font-bold text-gray-800 dark:text-white">{value}</p>
+    </motion.div>
   );
 }
